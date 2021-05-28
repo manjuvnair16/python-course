@@ -1,4 +1,6 @@
 #1a. Fix the the following code, by removing illegal characters from the variable name
+# 8$my_first-name = "Raqim"
+# print(8$my_first-name)
 my_first_name = "Raqim"
 print(my_first_name)
 
