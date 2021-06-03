@@ -7,4 +7,4 @@ while counter <= 500:
         total_sum = total_sum + counter
     counter = counter + 1
 
-print(f'The sum of all numbers between 1 and 500 is {total_sum}')
+print(f'The sum of all numbers divisible by 3, between 1 and 500 is {total_sum}')
