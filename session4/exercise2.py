@@ -1,4 +1,3 @@
-47
 #2a. Write a function called shopping_calculator 
 
 def shopping_calculator(shopping_cost,discount_applicable):
