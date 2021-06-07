@@ -16,9 +16,9 @@ Output: 2
 def letter_count(word, letter):
     return word.lower().count(letter.lower())
 
-print(letter_count("Tarantula", "t"))
+print(letter_count("Tarantula", "A"))
 
-
+'''
 #Method 2
 def letter_count(word, letter):
     count = 0
@@ -28,3 +28,4 @@ def letter_count(word, letter):
     return count
 
 print(letter_count("Banana", "A"))
+'''
