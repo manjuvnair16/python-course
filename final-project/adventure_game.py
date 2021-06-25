@@ -211,7 +211,7 @@ def view_stats(monster,avatar):
           ")
 
 
-def use_goodies(steps,goodies_collected, avatar, score):
+def use_goodies(steps,goodies_collected, avatar, score,goodies_used):
     moved_forward = False
     
     if len(goodies_collected) == 0:
@@ -219,11 +219,14 @@ def use_goodies(steps,goodies_collected, avatar, score):
     else:
         valid_input = False
         while not valid_input:
-            print(f"GIZMOS collected: \n")
+            print(f"Select a Gizmo to use it now: \n")
             for i, item in enumerate(goodies_collected):
+                gizmo_to_be_used = False
                 if item not in goodies_used:
                     print(f"{item} : To use press {i+1}\n")
-        
+                    gizmo_to_be_used = True
+            if gizmo_to_be_used == False:
+                print(f"Sorry, all gizmos have been used up!\n")
             print(f"To go back : press 0\n")
             user_choice = input("\n")
             if re.search('[0123]',user_choice):
@@ -243,8 +246,10 @@ def use_goodies(steps,goodies_collected, avatar, score):
             score = use_treasure_gizmo(score)
             goodies_used.append(goodies_collected[user_choice - 1])
         else:
-            print(f"\nYou decided to not use any pick-ups - Going Back!\n")
-    
+            if gizmo_to_be_used == True:
+                print(f"\nYou decided to not use any pick-ups - Going Back!\n")
+            else:
+                print(f"\nGoing Back!\n")
     return steps, avatar, score, moved_forward
 
 
@@ -303,10 +308,11 @@ def react_to_monster(monster,avatar,steps,score,goodies_collected,monsters_kille
 
 
 def check_if_pick_ups_available(steps, goodies_collected,score):
-    if steps >= MILESTONES_FOR_PICK_UPS[len(goodies_collected)]:
-        goodies_collected.append(GOODIES_LIST[len(goodies_collected)])
-        score += 5
-        print(f"Well Done! You've collected a {goodies_collected[len(goodies_collected)-1]}\n")
+    if len(goodies_collected) <= 3:
+        if steps >= MILESTONES_FOR_PICK_UPS[len(goodies_collected)]:
+            goodies_collected.append(GOODIES_LIST[len(goodies_collected)])
+            score += 5
+            print(f"Well Done! You've collected a {goodies_collected[len(goodies_collected)-1]}\n")
     
     return score, goodies_collected
 
@@ -365,31 +371,38 @@ def play_game():
 def start_game(avatar):
     goodies_collected = []
     goodies_used = []
+    monsters_encountered = []
     monsters_killed = 0
     score = 0
     steps = 0
     moved_forward = True
     while moved_forward == True:
         monster = random.choice(MONSTERS_LIST)
+        while monster['name'] in monsters_encountered:
+           monster = random.choice(MONSTERS_LIST)
+        
+        monsters_encountered.append(monster['name'])
+    
         moved_forward = False
         monster, avatar, steps, score, moved_forward,monsters_killed,quit_game = react_to_monster(monster,avatar,steps,score,goodies_collected,monsters_killed,goodies_used)
         
         if avatar['HP'] <= 0 or quit_game == True:
-            print(f"Your score is {score}\n\
-                    You killed {monsters_killed} monsters\n\
-                    You collected {len(goodies_collected)} items\n\
+            print(f"\nYour score is {score}\n\
+                    \nYou killed {monsters_killed} monsters\n\
+                    \nYou collected {len(goodies_collected)} items\n\
                  ")
             exit_game()
-            break
-
-        if steps >= 15:
-            end_of_journey(monsters_killed, score, goodies_collected)
             break
 
         if moved_forward == True:
             score, goodies_collected = check_if_pick_ups_available(steps, goodies_collected,score)
         else:
             steps, moved_forward = roll_dice_to_move_forward(steps)
+            score, goodies_collected = check_if_pick_ups_available(steps, goodies_collected,score)
+
+        if steps >= 15:
+            end_of_journey(monsters_killed, score, goodies_collected)
+            break
     
     return True
 
