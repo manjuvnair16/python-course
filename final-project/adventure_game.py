@@ -58,7 +58,7 @@ class Avatar:
         self.quit_game = quit_game
         self.steps = steps
 
-    #\n{'-'*70}\
+    
     def decide_to_view_stats(self,monster):
         print (f"{'STATS'.center(70)}\n\
                 \n{'-'*70}\
@@ -440,13 +440,7 @@ def start_game(avatar):
             display_incomplete_journey_message(avatar)
             exit_game()
             break
-        '''
-        if avatar.moved_forward == True:
-            check_if_pick_ups_available(avatar)
-        else:
-            roll_dice_to_move_forward(avatar)
-            check_if_pick_ups_available(avatar)
-        '''
+        
         if avatar.moved_forward == False:
             roll_dice_to_move_forward(avatar)
         check_if_pick_ups_available(avatar)
