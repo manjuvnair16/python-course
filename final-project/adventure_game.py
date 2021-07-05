@@ -3,6 +3,41 @@ import csv
 import random
 import re
 
+
+'''
+----------------------------------------------
+Global Variable (constants) Assignment
+----------------------------------------------
+'''
+
+MONSTERS_LIST = []
+AVATAR_LIST = []
+PICK_UP_LIST = []
+
+MILESTONES_FOR_PICK_UP = {
+                            'first_pick_up_after_steps' : 5,
+                            'second_pick_up_after_steps': 10,
+                            'third_pick_up_after_steps' : 15
+                          }
+
+MILESTONES_FOR_PICK_UP_LIST = list(MILESTONES_FOR_PICK_UP.values())
+
+TOTAL_NO_OF_STEPS_TILL_FINISH = 20
+
+TOTAL_NO_OF_PICK_UPS = 3
+
+ATTACK_RESULTS = ['Hit','Miss','Hurt']
+
+ESCAPE_RESULTS = ["Escaped","Hit"]
+
+
+
+'''
+----------------------------------------------
+Class Defintions  (Monster, Avatar, Pick_Up)
+----------------------------------------------
+'''
+
 class Monster:
 
     def __init__(self, img, name, description, hit_points, attack_style):
@@ -32,30 +67,15 @@ class Monster:
                     \nPress enter to continue!\n\
                 ") 
 
-response = requests.get('https://api.osrsbox.com/monsters?where={"duplicate":false}')
-monsters_api_data = response.json()
-monster_images = ['👾','👻','👹','🎃','👣 👣','👺','💀','☠ 💀','👻','🦀','👀 🐕','👿 🐺','👽 🐺','👿 👽 🐺']
-MONSTERS_LIST = []
-i = 0
-for monster_item in monsters_api_data["_items"]:
-    monster_data = {k:v for k,v in monster_item.items() if k=="name" or k=="hitpoints" or k=="attack_type" or k=="examine"}
-    duplicate = False
-    
-    for element in MONSTERS_LIST:
-        if element.name == monster_data["name"]:
-            duplicate = True
-            break
-
-    if duplicate == False:
-        index_of_images = i % 14
-        monster_details = Monster(monster_images[index_of_images], monster_data["name"],monster_data["examine"],monster_data["hitpoints"],monster_data["attack_type"])
-        MONSTERS_LIST.append(monster_details)
-        i += 1
-
-
 
 class Avatar:
-    def __init__(self, name,img, HP, signature_move='', steps = 0, monsters_killed=0, monsters_encountered=[], pick_ups_collected=[], pick_ups_used=[], moved_forward = True, score = 0, quit_game = False):
+
+    def __init__(self, name,img, HP, signature_move='', 
+                monsters_killed=0, monsters_encountered=[], 
+                pick_ups_collected=[], pick_ups_used=[], 
+                steps = 0, moved_forward = True, 
+                score = 0, quit_game = False):
+        
         self.name = name
         self.img = img
         self.HP = HP
@@ -87,12 +107,11 @@ class Avatar:
     
 
     def handle_different_cases_on_attack(self,monster):
-        ATTACK_RESULTS = ['Hit','Miss','Hurt']
         result = random.choice(ATTACK_RESULTS)
-        if result == "Hit":
+        if result.lower() == "hit".lower():
             monster.case_hit(self)
             
-        elif result == "Miss":
+        elif result.lower() == "miss".lower():
             self.case_miss()
 
         else:
@@ -108,7 +127,6 @@ class Avatar:
     def case_hurt(self,monster):
         print('\033c')
         print(f"Oops, The monster attacked you! You got hurt! 🤕 \n")
-            
         self.HP = self.HP - monster.hit_points
         if self.HP <= 0:
             input(f"You have 0 health! You lost!  👎\n\
@@ -127,9 +145,8 @@ class Avatar:
 
 
     def handle_different_cases_on_trying_to_run_away(self,monster):
-        ESCAPE_RESULTS = ["Escaped","Hit"]
         action = random.choice(ESCAPE_RESULTS)
-        if action == "Escaped":
+        if action.lower() == "escaped".lower():
             self.case_escaped()
         else:
             self.case_hurt(monster)
@@ -155,16 +172,8 @@ class Avatar:
                 ")
 
 
-AVATAR_LIST = []
-with open('avatar_data.csv','r') as file:
-    csv_reader = csv.reader(file)
-    next(csv_reader, "")                 
-    for row in csv_reader:
-        AVATAR_LIST.append(Avatar(row[0],row[1],int(row[2]),row[3]))
-
-
-
 class PickUp:
+
     def __init__(self,name,img,description):
         self.name = name
         self.img = img
@@ -187,7 +196,6 @@ class PickUp:
     def handle_time_saver(self,avatar):
         avatar.steps += 3
         avatar.moved_forward = True
-        check_if_pick_ups_available(avatar)
         input(f"\nYou've moved forward 3 steps 🐾 \n\
                 \nPress enter to continue!\n\
              ")
@@ -211,24 +219,96 @@ class PickUp:
         avatar.pick_ups_used.append(self.name.lower())
 
 
-PICK_UP_LIST = []
-with open('pick_up_data.csv','r') as file:
-    csv_reader = csv.reader(file)
-    next(csv_reader, "")    
-    for row in csv_reader:
-        PICK_UP_LIST.append(PickUp(row[0],row[1],row[2]))
+
+'''
+--------------------------------------------------------------------
+Load monster, avatar & pick_up data into their respective lists
+--------------------------------------------------------------------
+'''
+
+def get_extract_load_monster_data_from_api_to_list():
+    """
+    Gets data from API endpoint, extracts useful data, filters out records with duplicate monster names & loads into MONSTER_LIST
+    """
+
+    monsters_api_data = get_monster_data_from_api_endpoint()
+    for monster_item in monsters_api_data:
+        monster_data = extract_required_key_value_pair_from_monster_api_data(monster_item)
+        duplicate = check_for_duplicate_monster_names(monster_data)
+        if duplicate == False:
+            load_monster_data_into_list_with_image(monster_data)
+
+
+def get_monster_data_from_api_endpoint():
+    response = requests.get('https://api.osrsbox.com/monsters?where={"duplicate":false}')
+    monsters_api_data = response.json()
+    return monsters_api_data["_items"]
+
+
+def extract_required_key_value_pair_from_monster_api_data(monster_item):
+      return {k:v for k,v in monster_item.items() if k=="name" or k=="hitpoints" or k=="attack_type" or k=="examine"}
+
+
+def check_for_duplicate_monster_names(monster_data):
+    for element in MONSTERS_LIST:
+        if element.name == monster_data["name"]:
+            return True
+    return False   
+
+
+def load_monster_data_into_list_with_image(monster_data):
+    monster_images = ['👾','👻','👹','🎃','👣 👣','👺','💀','☠ 💀','👻','🦀','👀 🐕','👿 🐺','👽 🐺','👿 👽 🐺']
+    index_of_images = len(MONSTERS_LIST) % 14
+    monster_image = monster_images[index_of_images]
+    monster_details = create_monster_object_with_each_monster_api_record(monster_data,monster_image)
+    append_monster_data_into_list(monster_details)
+    
+
+def create_monster_object_with_each_monster_api_record(monster_data, monster_image):
+    return Monster(monster_image, monster_data["name"],monster_data["examine"],monster_data["hitpoints"],monster_data["attack_type"])   
+
+
+def append_monster_data_into_list(monster_details):
+    MONSTERS_LIST.append(monster_details)
 
 
 
-MILESTONES_FOR_PICK_UP = {
-                            'first_pick_up_after_steps' : 5,
-                            'second_pick_up_after_steps': 10
-                            #'third_pick_up_after_steps' : 12
-                          }
+def load_avatar_data_from_csv_to_list():
+    """
+    Gets data from avatar_data.csv & loads it into AVATAR_LIST
+    """
 
-MILESTONES_FOR_PICK_UP_LIST = list(MILESTONES_FOR_PICK_UP.values())
+    with open('avatar_data.csv','r') as file:
+        csv_reader = csv.reader(file)
+        next(csv_reader, "")          #skips the header row           
+        for row in csv_reader:
+            '''
+            name = row[0], img = row[1], HP = row[2], signature_move = row[3]
+            '''
+            AVATAR_LIST.append(Avatar(row[0],row[1],int(row[2]),row[3]))    
 
 
+
+def load_pick_up_data_from_csv_to_list():
+    """
+    Gets data from pick_up_data.csv & loads it into PICK_UP_LIST
+    """
+    
+    with open('pick_up_data.csv','r') as file:
+        csv_reader = csv.reader(file)
+        next(csv_reader, "")          
+        for row in csv_reader:
+            '''
+            name = row[0], img = row[1], description = row[2]
+            '''
+            PICK_UP_LIST.append(PickUp(row[0],row[1],row[2]))
+
+
+'''
+--------------------------------------------------------------------
+Code for the adventure game
+--------------------------------------------------------------------
+'''
 
 def create_divider(num_of_asterix):
     return '*' * num_of_asterix
@@ -369,22 +449,6 @@ def display_message_on_same_monster_still_lurking(monster):
     user_choice = accept_user_action_on_monster_approach(monster)
     return user_choice
 
-'''
-def accept_user_action_on_same_monster_still_lurking(monster):
-    valid_input = False
-    while not valid_input:
-        user_choice =  input(f"\nPress 1 - Attack  🗡 \n\
-                               \nPress 2 - View stats  🖥 \n\
-                               \nPress 3 - Use pick ups 🎁 \n\
-                               \nPress 4 - Run away/Move forward 👣 \n\
-                               \nPress 5 - Exit game  👋 \n\
-                               \n")
-        if re.search('[12345]',user_choice):
-            valid_input = True
-            return user_choice
-        else:
-            print(f"\nPlease enter from the following only: 1,2,3,4,5\n")
-'''
 
 def display_incomplete_journey_message(avatar):
     print('\033c')
@@ -424,7 +488,6 @@ def check_if_user_input_of_pick_up_is_valid(regex_exp,user_choice):
 
 def accept_user_choice_of_pick_up(avatar):
     valid_input = False
-    #regex_exp = '0'
     while not valid_input:
         user_choice,regex_exp = display_list_of_pick_ups_which_can_be_used(avatar)
         valid_input = check_if_user_input_of_pick_up_is_valid(regex_exp,user_choice)
@@ -490,8 +553,6 @@ def display_message_on_collecting_pick_up(latest_pick_up):
 def check_if_pick_ups_available(avatar):
     print('\033c')
     no_of_pick_ups_collected = len(avatar.pick_ups_collected)
-    TOTAL_NO_OF_PICK_UPS = 2
-
     if no_of_pick_ups_collected < TOTAL_NO_OF_PICK_UPS:
         if avatar.steps >= MILESTONES_FOR_PICK_UP_LIST[no_of_pick_ups_collected]:
             latest_pick_up = PICK_UP_LIST[no_of_pick_ups_collected]
@@ -509,22 +570,23 @@ def roll_dice_to_move_forward(avatar):
     input(f"You moved {no_of_steps_forward} steps. 🐾\n\
             \nPress enter to continue\n\
          ")
-    check_if_pick_ups_available(avatar)
-    
-    
    
+      
 def display_end_of_journey_message(avatar):
     print('\033c')
+    NO_OF_MONSTERS_TO_BE_KILLED_MAX_FOR_LEVEL_ONE = 2
+    NO_OF_MONSTERS_TO_BE_KILLED_MAX_FOR_LEVEL_TWO = 4
+    NO_OF_MONSTERS_TO_BE_KILLED_MIN_FOR_LEVEL_THREE = 5
     print(f"✨  Hurrah! You've made it through the maze of monsters!  🎇 \n\
             \n{'Score:'.ljust(20)} {avatar.score}  ✨\n\
             \n{'Monsters Slayed:'.ljust(20)} {avatar.monsters_killed}  🗡\n\
             \n{'Pick-Ups Collected:'.ljust(20)} {len(avatar.pick_ups_collected)}  🎁\n\
         ")
-    if avatar.monsters_killed <= 1:
+    if avatar.monsters_killed <= NO_OF_MONSTERS_TO_BE_KILLED_MAX_FOR_LEVEL_ONE:
         print(f"\nLevel 1: Lucky to be alive!  😰\n")
-    elif avatar.monsters_killed == 2:
-        print(f"\nLevel 2: Future awaits you! 😎\n")
-    elif avatar.monsters_killed > 2:
+    elif avatar.monsters_killed > NO_OF_MONSTERS_TO_BE_KILLED_MAX_FOR_LEVEL_ONE and avatar.monsters_killed <= NO_OF_MONSTERS_TO_BE_KILLED_MAX_FOR_LEVEL_TWO:
+        print(f"\nLevel 2: Future awaits you! 😎\n") 
+    elif avatar.monsters_killed > NO_OF_MONSTERS_TO_BE_KILLED_MIN_FOR_LEVEL_THREE:
         print(f"\nLevel 3: Brave Warrior, Salutations! 🙇\n")
 
 
@@ -566,8 +628,8 @@ def check_if_avatar_lost_or_quit(avatar):
     else:
         return False
 
+
 def start_game(avatar):
-    TOTAL_NO_OF_STEPS_TILL_FINISH = 12
     while avatar.moved_forward == True:
         monster = choose_random_monster(avatar)
         react_to_monster(avatar,monster)
@@ -578,6 +640,8 @@ def start_game(avatar):
         
         if avatar.moved_forward == False:
             roll_dice_to_move_forward(avatar)
+        
+        check_if_pick_ups_available(avatar)
         
         if avatar.steps >= TOTAL_NO_OF_STEPS_TILL_FINISH:
             display_end_of_journey_message(avatar)
@@ -595,8 +659,15 @@ def wrong_input():
     return False
    
 
+def load_monster_avatar_and_pick_up_data_into_lists():
+    get_extract_load_monster_data_from_api_to_list()
+    load_avatar_data_from_csv_to_list()
+    load_pick_up_data_from_csv_to_list()
+
+
 def main():
     print('\033c')
+    load_monster_avatar_and_pick_up_data_into_lists()
     valid_input = False
     while not valid_input:
         user_choice = display_start_menu().lower()
