@@ -19,7 +19,6 @@ MILESTONES_FOR_PICK_UP = {
                             'second_pick_up_after_steps': 10,
                             'third_pick_up_after_steps' : 15
                           }
-
 MILESTONES_FOR_PICK_UP_LIST = list(MILESTONES_FOR_PICK_UP.values())
 
 TOTAL_NO_OF_STEPS_TILL_FINISH = 20
@@ -30,6 +29,8 @@ ATTACK_RESULTS = ['Hit','Miss','Hurt']
 
 ESCAPE_RESULTS = ["Escaped","Hit"]
 
+MIN_STEPS_WHILE_ROLLING_DICE = 1
+MAX_STEPS_WHILE_ROLLING_DICE = 6
 
 
 '''
@@ -153,7 +154,7 @@ class Avatar:
             
 
     def case_escaped(self):
-        no_of_steps_forward = random.randint(1,5)
+        no_of_steps_forward = random.randint( MIN_STEPS_WHILE_ROLLING_DICE, MAX_STEPS_WHILE_ROLLING_DICE )
         self.steps += no_of_steps_forward
         self.moved_forward = True
         input(f"You escaped, phew! 😰  You managed to run {no_of_steps_forward} steps away from the monster!\n\
@@ -226,7 +227,7 @@ Load monster, avatar & pick_up data into their respective lists
 --------------------------------------------------------------------
 '''
 
-def get_extract_load_monster_data_from_api_to_list():
+def get_extract_and_load_monster_data_from_api_to_list():
     """
     Gets data from API endpoint, extracts useful data, filters out records with duplicate monster names & loads into MONSTER_LIST
     """
@@ -258,7 +259,7 @@ def check_for_duplicate_monster_names(monster_data):
 
 def load_monster_data_into_list_with_image(monster_data):
     monster_images = ['👾','👻','👹','🎃','👣 👣','👺','💀','☠ 💀','👻','🦀','👀 🐕','👿 🐺','👽 🐺','👿 👽 🐺']
-    index_of_images = len(MONSTERS_LIST) % 14
+    index_of_images = len(MONSTERS_LIST) % len(monster_images)
     monster_image = monster_images[index_of_images]
     monster_details = create_monster_object_with_each_monster_api_record(monster_data,monster_image)
     append_monster_data_into_list(monster_details)
@@ -293,7 +294,7 @@ def load_pick_up_data_from_csv_to_list():
     """
     Gets data from pick_up_data.csv & loads it into PICK_UP_LIST
     """
-    
+
     with open('pick_up_data.csv','r') as file:
         csv_reader = csv.reader(file)
         next(csv_reader, "")          
@@ -302,6 +303,8 @@ def load_pick_up_data_from_csv_to_list():
             name = row[0], img = row[1], description = row[2]
             '''
             PICK_UP_LIST.append(PickUp(row[0],row[1],row[2]))
+
+
 
 
 '''
@@ -323,6 +326,26 @@ def display_start_menu():
                 \n")
 
 
+def display_game_menu():
+    print('\033c')
+    valid_input = False
+    while not valid_input:
+        user_choice = input(f"\n 🎮  Game Menu  📜\
+                              \n{'-'*70}\
+                              \n Press 1 - How to Play ⁈\n\
+                              \n Press 2 - Choose an Avatar 🐯  🐻  🦁  🐱\n\
+                              \n Press 3 - Display Game Route 🗺 \n\
+                              \n Press 4 - Start Game  👍\n\
+                              \n Press 5 - Exit game  👎\n\
+                              \n{'-'*70}\n\
+                            \n")
+        if re.search('[12345]',user_choice):
+            valid_input = True
+            return user_choice
+        else:
+            print(f"\nPlease enter from the following only: 1,2,3,4,5\n")
+
+
 def display_game_instructions():
     print('\033c')
     input(f"\n{'📜  Instructions: 📜'.center(70)}\
@@ -333,14 +356,6 @@ def display_game_instructions():
             \n{'📘  Collect pick-ups, hit & slay as many lurking monsters to ⬆ your score.'.ljust(70)}\n\
             \n\n{'Press enter to continue'.ljust(70)}\n\
         \n")
-
-
-def display_avatar_options():
-    return input(f"\n\n{'Choose Your Avatar:'.center(40)}\n\
-               \n{'🐯'.center(10)}|{'🦁'.center(10)}|{'🐻'.center(10)}|{'🐱'.center(10)}\n\
-               \n{'Tiger'.center(10)}|{'Lion'.center(10)}|{'Bear'.center(10)}|{'Fox'.center(10)}\n\
-               \n{'Press t'.center(10)}|{'Press l'.center(10)}|{'Press b'.center(10)}|{'Press f'.center(10)}\n\
-            \n")
 
 
 def display_first_line_of_game_route():
@@ -369,24 +384,12 @@ def display_game_route(avatar):
         \n")
    
     
-def display_game_menu():
-    print('\033c')
-    valid_input = False
-    while not valid_input:
-        user_choice = input(f"\n 🎮  Game Menu  📜\
-                              \n{'-'*70}\
-                              \n Press 1 - How to Play ⁈\n\
-                              \n Press 2 - Choose an Avatar 🐯  🐻  🦁  🐱\n\
-                              \n Press 3 - Display Game Route 🗺 \n\
-                              \n Press 4 - Start Game  👍\n\
-                              \n Press 5 - Exit game  👎\n\
-                              \n{'-'*70}\n\
-                            \n")
-        if re.search('[12345]',user_choice):
-            valid_input = True
-            return user_choice
-        else:
-            print(f"\nPlease enter from the following only: 1,2,3,4,5\n")
+def display_avatar_options():
+    return input(f"\n\n{'Choose Your Avatar:'.center(40)}\n\
+               \n{'🐯'.center(10)}|{'🦁'.center(10)}|{'🐻'.center(10)}|{'🐱'.center(10)}\n\
+               \n{'Tiger'.center(10)}|{'Lion'.center(10)}|{'Bear'.center(10)}|{'Fox'.center(10)}\n\
+               \n{'Press t'.center(10)}|{'Press l'.center(10)}|{'Press b'.center(10)}|{'Press f'.center(10)}\n\
+            \n")
 
 
 def choose_avatar():  
@@ -409,6 +412,56 @@ def get_chosen_avatar_details(user_choice):
                     \nPress enter to continue\n\
                  ")
             return avatar_obj
+
+
+def play_game():
+    avatar = AVATAR_LIST[0]   #take a default value for avatar
+    user_choice = ''
+    while user_choice != '4':
+        user_choice = display_game_menu()
+
+        if user_choice == '1':
+            display_game_instructions()
+        elif user_choice == '2':
+            avatar = choose_avatar()
+        elif user_choice == '3':
+            display_game_route(avatar)
+        elif user_choice == '4':
+            start_game(avatar)
+        else:
+            exit_game()
+            break
+    return True
+
+
+def start_game(avatar):
+    while avatar.moved_forward == True:
+        monster = choose_random_monster(avatar)
+        react_to_monster(avatar,monster)
+        avatar_lost_or_quit = check_if_avatar_lost_or_quit(avatar)
+        
+        if avatar_lost_or_quit == True:
+            break
+        
+        if avatar.moved_forward == False:
+            roll_dice_to_move_forward(avatar)
+        
+        check_if_pick_ups_available(avatar)
+        
+        if avatar.steps >= TOTAL_NO_OF_STEPS_TILL_FINISH:
+            display_end_of_journey_message(avatar)
+            break
+
+
+def choose_random_monster(avatar):
+    monster = random.choice(MONSTERS_LIST)
+    while monster.name in avatar.monsters_encountered:
+        if len(avatar.monsters_encountered) == len(MONSTERS_LIST):
+            monsters_encountered = [] 
+        monster = random.choice(MONSTERS_LIST)
+
+    avatar.monsters_encountered.append(monster.name)
+    return monster
 
 
 def display_message_on_monster_approach(monster):
@@ -450,50 +503,32 @@ def display_message_on_same_monster_still_lurking(monster):
     return user_choice
 
 
-def display_incomplete_journey_message(avatar):
-    print('\033c')
-    print(f"{'Journey Incomplete! 👎'.center(20)}\
-          \n{'Score: '.ljust(20)}{avatar.score}\
-          \n{'Monsters Killed: '.ljust(20)}{avatar.monsters_killed}\
-          \n{'Pick-Ups collected: '.ljust(20)}{len(avatar.pick_ups_collected)}\n\
-         ")
+def react_to_monster(avatar, monster):
+    avatar.moved_forward = False
+    action = display_message_on_monster_approach(monster)
+    while  monster.hit_points > 0:
+        assign_actions(action,avatar,monster)
+        if avatar.HP <= 0 or avatar.moved_forward == True or avatar.quit_game == True:
+            break
+        if monster.hit_points <= 0:
+            avatar.monsters_killed += 1
+            avatar.score += 10
+            break
+        action = display_message_on_same_monster_still_lurking(monster)
 
 
-def check_if_pick_up_has_been_used_then_display(avatar):
-    no_of_pick_ups_collected = len(avatar.pick_ups_collected)
-    regex_exp = '0'
-    for i  in range(no_of_pick_ups_collected):
-        if avatar.pick_ups_collected[i].name.lower() not in avatar.pick_ups_used:
-            print(f"Press {i+1}: {avatar.pick_ups_collected[i].name} {avatar.pick_ups_collected[i].img}\n")
-            regex_exp += str(i+1)
-    return regex_exp
-
-
-def display_list_of_pick_ups_which_can_be_used(avatar):
-    print(f"Select a pick-up to use it now: \n")
-    regex_exp = check_if_pick_up_has_been_used_then_display(avatar)  
-    print(f"Press 0: To go back \n")
-    user_choice = input("\n")
-    return user_choice, regex_exp
-
-
-def check_if_user_input_of_pick_up_is_valid(regex_exp,user_choice):
-    if re.search(rf"[{regex_exp}]",user_choice):
-        return True
-    else:
-        display_regex_exp = ",".join(list(regex_exp))
-        print(f"\nPlease enter from the following only: {display_regex_exp}\n")
-        return False
-
-
-def accept_user_choice_of_pick_up(avatar):
-    valid_input = False
-    while not valid_input:
-        user_choice,regex_exp = display_list_of_pick_ups_which_can_be_used(avatar)
-        valid_input = check_if_user_input_of_pick_up_is_valid(regex_exp,user_choice)
+def assign_actions(action,avatar,monster):
+    if action == "1":
+        avatar.decide_to_attack(monster)
+    if action == "2":
+        avatar.decide_to_view_stats(monster)
+    if action == "3":
+       display_pick_ups_to_be_used_menu(avatar)
+    if action == "4":
+        avatar.decide_to_run_away(monster)
+    if action == "5":
+        avatar.quit_game = True
     
-    return user_choice
-
 
 def display_pick_ups_to_be_used_menu(avatar):
     print('\033c')
@@ -509,34 +544,65 @@ def display_pick_ups_to_be_used_menu(avatar):
     else:
         user_choice = int(accept_user_choice_of_pick_up(avatar))
         avatar.decide_to_use_pick_ups(user_choice)
-                
 
-def assign_actions(action,avatar,monster):
-    if action == "1":
-        avatar.decide_to_attack(monster)
-    if action == "2":
-        avatar.decide_to_view_stats(monster)
-    if action == "3":
-       display_pick_ups_to_be_used_menu(avatar)
-    if action == "4":
-        avatar.decide_to_run_away(monster)
-    if action == "5":
-        avatar.quit_game = True
+
+def accept_user_choice_of_pick_up(avatar):
+    valid_input = False
+    while not valid_input:
+        user_choice,regex_exp = display_list_of_pick_ups_which_can_be_used(avatar)
+        valid_input = check_if_user_input_of_pick_up_is_valid(regex_exp,user_choice)
     
+    return user_choice
 
-def react_to_monster(avatar, monster):
-    avatar.moved_forward = False
-    action = display_message_on_monster_approach(monster)
-    while  monster.hit_points > 0:
-        assign_actions(action,avatar,monster)
-        if avatar.HP <= 0 or avatar.moved_forward == True or avatar.quit_game == True:
-            break
-        if monster.hit_points <= 0:
-            avatar.monsters_killed += 1
-            avatar.score += 10
-            break
-        action = display_message_on_same_monster_still_lurking(monster)
 
+def display_list_of_pick_ups_which_can_be_used(avatar):
+    print(f"Select a pick-up to use it now: \n")
+    regex_exp = check_if_pick_up_has_been_used_then_display(avatar)  
+    print(f"Press 0: To go back \n")
+    user_choice = input("\n")
+    return user_choice, regex_exp
+
+
+def check_if_pick_up_has_been_used_then_display(avatar):
+    no_of_pick_ups_collected = len(avatar.pick_ups_collected)
+    regex_exp = '0'
+    for i  in range(no_of_pick_ups_collected):
+        if avatar.pick_ups_collected[i].name.lower() not in avatar.pick_ups_used:
+            print(f"Press {i+1}: {avatar.pick_ups_collected[i].name} {avatar.pick_ups_collected[i].img}\n")
+            regex_exp += str(i+1)
+    return regex_exp
+
+
+def check_if_user_input_of_pick_up_is_valid(regex_exp,user_choice):
+    if re.search(rf"[{regex_exp}]",user_choice):
+        return True
+    else:
+        display_regex_exp = ",".join(list(regex_exp))
+        print(f"\nPlease enter from the following only: {display_regex_exp}\n")
+        return False
+
+
+def roll_dice_to_move_forward(avatar):
+    print('\033c')
+    no_of_steps_forward = random.randint( MIN_STEPS_WHILE_ROLLING_DICE, MAX_STEPS_WHILE_ROLLING_DICE )
+    avatar.steps += no_of_steps_forward
+    avatar.moved_forward = True
+    input(f"You moved {no_of_steps_forward} steps. 🐾\n\
+            \nPress enter to continue\n\
+         ")
+   
+
+def check_if_pick_ups_available(avatar):
+    print('\033c')
+    no_of_pick_ups_collected = len(avatar.pick_ups_collected)
+    if no_of_pick_ups_collected < TOTAL_NO_OF_PICK_UPS:
+        if avatar.steps >= MILESTONES_FOR_PICK_UP_LIST[no_of_pick_ups_collected]:
+            latest_pick_up = PICK_UP_LIST[no_of_pick_ups_collected]
+
+            update_avatar_details_on_collecting_pick_up(avatar,latest_pick_up)
+
+            display_message_on_collecting_pick_up(latest_pick_up)
+    
 
 def update_avatar_details_on_collecting_pick_up(avatar,latest_pick_up):
     avatar.pick_ups_collected.append(latest_pick_up)
@@ -550,28 +616,23 @@ def display_message_on_collecting_pick_up(latest_pick_up):
          ")
 
 
-def check_if_pick_ups_available(avatar):
-    print('\033c')
-    no_of_pick_ups_collected = len(avatar.pick_ups_collected)
-    if no_of_pick_ups_collected < TOTAL_NO_OF_PICK_UPS:
-        if avatar.steps >= MILESTONES_FOR_PICK_UP_LIST[no_of_pick_ups_collected]:
-            latest_pick_up = PICK_UP_LIST[no_of_pick_ups_collected]
+def check_if_avatar_lost_or_quit(avatar):
+    if avatar.HP <= 0 or avatar.quit_game == True:
+        display_incomplete_journey_message(avatar)
+        return True
+    else:
+        return False
 
-            update_avatar_details_on_collecting_pick_up(avatar,latest_pick_up)
 
-            display_message_on_collecting_pick_up(latest_pick_up)
-    
- 
-def roll_dice_to_move_forward(avatar):
+def display_incomplete_journey_message(avatar):
     print('\033c')
-    no_of_steps_forward = random.randint(1,6)
-    avatar.steps += no_of_steps_forward
-    avatar.moved_forward = True
-    input(f"You moved {no_of_steps_forward} steps. 🐾\n\
-            \nPress enter to continue\n\
-         ")
-   
-      
+    print(f"{'Journey Incomplete! 👎'.center(20)}\
+          \n{'Score: '.ljust(20)}{avatar.score}\
+          \n{'Monsters Killed: '.ljust(20)}{avatar.monsters_killed}\
+          \n{'Pick-Ups collected: '.ljust(20)}{len(avatar.pick_ups_collected)}\n\
+         ")      
+
+
 def display_end_of_journey_message(avatar):
     print('\033c')
     NO_OF_MONSTERS_TO_BE_KILLED_MAX_FOR_LEVEL_ONE = 2
@@ -590,64 +651,6 @@ def display_end_of_journey_message(avatar):
         print(f"\nLevel 3: Brave Warrior, Salutations! 🙇\n")
 
 
-def choose_random_monster(avatar):
-    monster = random.choice(MONSTERS_LIST)
-    while monster.name in avatar.monsters_encountered:
-        if len(avatar.monsters_encountered) == len(MONSTERS_LIST):
-            monsters_encountered = [] 
-        monster = random.choice(MONSTERS_LIST)
-
-    avatar.monsters_encountered.append(monster.name)
-    return monster
-
-
-def play_game():
-    avatar = AVATAR_LIST[0]   #take a default value for avatar
-    user_choice = ''
-    while user_choice != '4':
-        user_choice = display_game_menu()
-
-        if user_choice == '1':
-            display_game_instructions()
-        elif user_choice == '2':
-            avatar = choose_avatar()
-        elif user_choice == '3':
-            display_game_route(avatar)
-        elif user_choice == '4':
-            start_game(avatar)
-        else:
-            exit_game()
-            break
-    return True
-
-
-def check_if_avatar_lost_or_quit(avatar):
-    if avatar.HP <= 0 or avatar.quit_game == True:
-        display_incomplete_journey_message(avatar)
-        return True
-    else:
-        return False
-
-
-def start_game(avatar):
-    while avatar.moved_forward == True:
-        monster = choose_random_monster(avatar)
-        react_to_monster(avatar,monster)
-        avatar_lost_or_quit = check_if_avatar_lost_or_quit(avatar)
-        
-        if avatar_lost_or_quit == True:
-            break
-        
-        if avatar.moved_forward == False:
-            roll_dice_to_move_forward(avatar)
-        
-        check_if_pick_ups_available(avatar)
-        
-        if avatar.steps >= TOTAL_NO_OF_STEPS_TILL_FINISH:
-            display_end_of_journey_message(avatar)
-            break
-    
-
 def exit_game():
     print('\033c')
     print(f"\nUntil next time, goodbye!")
@@ -660,7 +663,7 @@ def wrong_input():
    
 
 def load_monster_avatar_and_pick_up_data_into_lists():
-    get_extract_load_monster_data_from_api_to_list()
+    get_extract_and_load_monster_data_from_api_to_list()
     load_avatar_data_from_csv_to_list()
     load_pick_up_data_from_csv_to_list()
 
