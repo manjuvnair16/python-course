@@ -1,0 +1,30 @@
+import json
+
+class Config_Data:
+
+    def __init__(self, json_file):
+        
+        config_data = json.load(json_file)
+
+        self.MONSTERS_LIST = config_data["MONSTERS_LIST"]
+        self.AVATAR_LIST = config_data["AVATAR_LIST"]
+        self.PICK_UP_LIST = config_data["PICK_UP_LIST"]
+
+        self.MILESTONES_FOR_PICK_UP = config_data["PICK_UP_DATA"]["MILESTONES_FOR_PICK_UP"]
+        self.MILESTONES_FOR_PICK_UP_LIST = list(self.MILESTONES_FOR_PICK_UP.values())
+
+        self.TOTAL_NO_OF_STEPS_TILL_FINISH = config_data["TOTAL_NO_OF_STEPS_TILL_FINISH"]
+
+        self.TOTAL_NO_OF_PICK_UPS = config_data["PICK_UP_DATA"]["TOTAL_NO_OF_PICK_UPS"]
+
+        self.ATTACK_RESULTS = config_data["ATTACK_RESULTS"]
+
+        self.ESCAPE_RESULTS = config_data["ESCAPE_RESULTS"]
+
+        self.MIN_STEPS_WHILE_ROLLING_DICE = config_data["STEP_LIMITS_ON_DICE_ROLL"]["MIN_STEPS_WHILE_ROLLING_DICE"]
+        self.MAX_STEPS_WHILE_ROLLING_DICE = config_data["STEP_LIMITS_ON_DICE_ROLL"]["MAX_STEPS_WHILE_ROLLING_DICE"]
+
+        self.NO_OF_MONSTERS_TO_BE_KILLED_MAX_FOR_LEVEL_ONE = config_data["MONSTERS_KILLED_LIMITS_FOR_DIFFERENT_LEVELS"]["NO_OF_MONSTERS_TO_BE_KILLED_MAX_FOR_LEVEL_ONE"]
+        self.NO_OF_MONSTERS_TO_BE_KILLED_MAX_FOR_LEVEL_TWO = config_data["MONSTERS_KILLED_LIMITS_FOR_DIFFERENT_LEVELS"]["NO_OF_MONSTERS_TO_BE_KILLED_MAX_FOR_LEVEL_TWO"]
+        self.NO_OF_MONSTERS_TO_BE_KILLED_MIN_FOR_LEVEL_THREE = config_data["MONSTERS_KILLED_LIMITS_FOR_DIFFERENT_LEVELS"]["NO_OF_MONSTERS_TO_BE_KILLED_MIN_FOR_LEVEL_THREE"]
+      
