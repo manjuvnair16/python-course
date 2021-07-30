@@ -1,18 +1,22 @@
 import requests
+import io
+import os
 
+'''Reading the api-key from the binary file
+'''
+with open("api_file.bin", encoding="utf-8") as  binary_file:
+    api_key = binary_file.read()
+str(api_key)
 
 '''
 *********************************************************************************
 1a. Sign up for an API key for a news site
-    You can test that your api key works using this snippet: 
-    query_params = {'api-key': 'your-api-key-here'} 
-    response = requests.get("https://content.guardianapis.com/search", params=query_params)
-    print(response.status_code)
-
+    Test if the API works
 *********************************************************************************
 '''
 
-query_params = {'api-key': '0b5c1be8-9695-4aa9-be95-d52483109ec9'} 
+#api_key = os.environ.get('GUARDIAN_API_KEY')
+query_params = {'api-key': api_key} 
 response = requests.get("https://content.guardianapis.com/search", params=query_params)
 print(response.status_code)
 
@@ -25,7 +29,7 @@ print(response.status_code)
 '''
 
 #https://content.guardianapis.com/search?q=clouds&api-key=test
-query_params = {'api-key': '0b5c1be8-9695-4aa9-be95-d52483109ec9',
+query_params = {'api-key': api_key,
                 'q'      : 'clouds'
                } 
 response = requests.get("https://content.guardianapis.com/search", params=query_params)
@@ -41,7 +45,7 @@ print(url)
 '''
 
 #https://content.guardianapis.com/search?to-date=2016-01-01&q=bitcoin&api-key=test
-query_params = {'api-key': '0b5c1be8-9695-4aa9-be95-d52483109ec9',
+query_params = {'api-key': api_key,
                 'to-date': '2016-01-01',
                 'q'      : 'bitcoin'
                } 
@@ -58,7 +62,7 @@ print(url)
 '''
 
 #https://content.guardianapis.com/search?to-date=2016-01-01&q=bitcoin&api-key=test
-query_params = {'api-key': '0b5c1be8-9695-4aa9-be95-d52483109ec9',
+query_params = {'api-key': api_key,
                 'from-date': '2021-01-01',
                 'q'      : '3d printing'
                } 
@@ -76,7 +80,7 @@ print(count)
 
 #https://content.guardianapis.com/search?section=science&from-date=2021-02-18&to-date=2021-02-18&order-by=oldest&q=mars&api-key=test
 
-query_params = {'api-key': '0b5c1be8-9695-4aa9-be95-d52483109ec9',
+query_params = {'api-key': api_key,
                 'from-date': '2021-02-18',
                 'to-date': '2021-02-18',
                 'q'      : 'mars',
