@@ -3,7 +3,7 @@ import os
 
 '''
 *********************************************************************************
-Get the api key from the environment variables
+Get the API key from the environment variables
 *********************************************************************************
 '''
 api_key = os.environ.get('GUARDIAN_API_KEY')
