@@ -1,12 +1,13 @@
 import requests
-import io
 import os
 
-'''Reading the api-key from the binary file
 '''
-with open("api_file.bin", encoding="utf-8") as  binary_file:
-    api_key = binary_file.read()
-str(api_key)
+*********************************************************************************
+Get the api key from the environment variables
+*********************************************************************************
+'''
+api_key = os.environ.get('GUARDIAN_API_KEY')
+
 
 '''
 *********************************************************************************
@@ -15,7 +16,6 @@ str(api_key)
 *********************************************************************************
 '''
 
-#api_key = os.environ.get('GUARDIAN_API_KEY')
 query_params = {'api-key': api_key} 
 response = requests.get("https://content.guardianapis.com/search", params=query_params)
 print(response.status_code)
