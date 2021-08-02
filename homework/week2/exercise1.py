@@ -36,8 +36,8 @@ print_nums()
 '''
 
 def print_nums(num):
-    for val in range(num +1):
+    for val in range(num + 1):
         if (val % 3 != 0):
             print(val)
 
-print_nums(23)
+print_nums(30)
