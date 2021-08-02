@@ -15,6 +15,8 @@ print(f'{float(95)}')
 ************************************************
 1b. Print out the type of the following value (using the appropriate function): 
 True
+'test'
 ************************************************
 '''
 print(type(True))
+print(type('test'))
